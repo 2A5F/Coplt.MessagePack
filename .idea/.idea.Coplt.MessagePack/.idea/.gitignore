@@ -1,0 +1,10 @@
+/shelf/
+/workspace.xml
+/modules.xml
+/projectSettingsUpdater.xml
+/contentModel.xml
+/.idea.Coplt.MessagePack.iml
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml

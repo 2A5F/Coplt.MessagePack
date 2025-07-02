@@ -1,0 +1,50 @@
+﻿namespace Coplt.MessagePack;
+
+public enum MessagePackTags : byte
+{
+    Nil = 0xc0,
+    False = 0xc2,
+    True = 0xc3,
+    UInt8 = 0xcc,
+    UInt16 = 0xcd,
+    UInt32 = 0xce,
+    UInt64 = 0xcf,
+    Int8 = 0xd0,
+    Int16 = 0xd1,
+    Int32 = 0xd2,
+    Int64 = 0xd3,
+    Float32 = 0xca,
+    Float64 = 0xcb,
+    String8 = 0xd9,
+    String16 = 0xda,
+    String32 = 0xdb,
+    Bytes8 = 0xc4,
+    Bytes16 = 0xc5,
+    Bytes32 = 0xc6,
+    Array16 = 0xdc,
+    Array32 = 0xdd,
+    Map16 = 0xde,
+    Map32 = 0xdf,
+    FixExt1 = 0xd4,
+    FixExt2 = 0xd5,
+    FixExt4 = 0xd6,
+    FixExt8 = 0xd7,
+    FixExt16 = 0xd8,
+    Ext8 = 0xc7,
+    Ext16 = 0xc8,
+    Ext32 = 0xc9,
+}
+
+public enum MessagePackType : byte
+{
+    EOF = 255,
+    Nil = 0,
+    Boolean,
+    Integer,
+    Float,
+    String,
+    Binary,
+    Array,
+    Map,
+    Extension,
+}
