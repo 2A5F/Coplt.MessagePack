@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -477,6 +478,174 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         return str;
     }
 
+    #region ReadStringUtf8 With handler
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public int? ReadStringUtf8(Action<ReadOnlySpan<byte>> handler)
+    {
+        var lds = PeekStringUtf8LengthWithDataStart();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = Source.Peek(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        handler(bytes[data_start..]);
+        Source.Read(len);
+        return len;
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public int? ReadStringUtf8<A>(A arg, Action<A, ReadOnlySpan<byte>> handler) where A : allows ref struct
+    {
+        var lds = PeekStringUtf8LengthWithDataStart();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = Source.Peek(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        handler(arg, bytes[data_start..]);
+        Source.Read(len);
+        return len;
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public (int Length, R Value)? ReadStringUtf8<R>(Func<ReadOnlySpan<byte>, R> handler)
+    {
+        var lds = PeekStringUtf8LengthWithDataStart();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = Source.Peek(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var r = handler(bytes[data_start..]);
+        Source.Read(len);
+        return (len, r);
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public (int Length, R Value)? ReadStringUtf8<A, R>(A arg, Func<A, ReadOnlySpan<byte>, R> handler) where A : allows ref struct
+    {
+        var lds = PeekStringUtf8LengthWithDataStart();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = Source.Peek(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var r = handler(arg, bytes[data_start..]);
+        Source.Read(len);
+        return (len, r);
+    }
+
+    #endregion
+
+    #region ReadString With handler
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public int? ReadString(Action<ReadOnlySpan<char>> handler)
+    {
+        var lds = PeekStringUtf8LengthWithDataStart();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = Source.Peek(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var utf8 = bytes[data_start..];
+        var arr = ArrayPool<char>.Shared.Rent(Encoding.UTF8.GetMaxCharCount(length));
+        try
+        {
+            var char_count = Encoding.UTF8.GetChars(utf8, arr);
+            handler(arr.AsSpan(0, char_count));
+            Source.Read(len);
+            return len;
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(arr);
+        }
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public int? ReadString<A>(A arg, Action<A, ReadOnlySpan<char>> handler) where A : allows ref struct
+    {
+        var lds = PeekStringUtf8LengthWithDataStart();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = Source.Peek(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var utf8 = bytes[data_start..];
+        var arr = ArrayPool<char>.Shared.Rent(Encoding.UTF8.GetMaxCharCount(length));
+        try
+        {
+            var char_count = Encoding.UTF8.GetChars(utf8, arr);
+            handler(arg, arr.AsSpan(0, char_count));
+            Source.Read(len);
+            return len;
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(arr);
+        }
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public (int Length, R Value)? ReadString<R>(Func<ReadOnlySpan<char>, R> handler)
+    {
+        var lds = PeekStringUtf8LengthWithDataStart();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = Source.Peek(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var utf8 = bytes[data_start..];
+        var arr = ArrayPool<char>.Shared.Rent(Encoding.UTF8.GetMaxCharCount(length));
+        try
+        {
+            var char_count = Encoding.UTF8.GetChars(utf8, arr);
+            var r = handler(arr.AsSpan(0, char_count));
+            Source.Read(len);
+            return (len, r);
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(arr);
+        }
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public (int Length, R Value)? ReadString<A, R>(A arg, Func<A, ReadOnlySpan<char>, R> handler) where A : allows ref struct
+    {
+        var lds = PeekStringUtf8LengthWithDataStart();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = Source.Peek(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var utf8 = bytes[data_start..];
+        var arr = ArrayPool<char>.Shared.Rent(Encoding.UTF8.GetMaxCharCount(length));
+        try
+        {
+            var char_count = Encoding.UTF8.GetChars(utf8, arr);
+            var r = handler(arg, arr.AsSpan(0, char_count));
+            Source.Read(len);
+            return (len, r);
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(arr);
+        }
+    }
+
+    #endregion
+
     #endregion
 
     #region ReadBytes
@@ -543,6 +712,8 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         return arr;
     }
 
+    #region ReadBytes with handler
+
     ///<exception cref="OutOfMemoryException">If the array is larger than the maximum size allowed by the clr</exception>
     public int? ReadBytes(Action<ReadOnlySpan<byte>> handler)
     {
@@ -602,6 +773,8 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         Source.Read(len);
         return (length, r);
     }
+
+    #endregion
 
     #endregion
 
@@ -752,7 +925,7 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
     #endregion
 }
 
-public struct AsyncMessagePackReader<TSource>(TSource Source, bool SourceOwner = true) : IDisposable, IAsyncDisposable
+public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceOwner = true) : IDisposable, IAsyncDisposable
     where TSource : IAsyncReadSource
 {
     #region Fields
@@ -777,7 +950,7 @@ public struct AsyncMessagePackReader<TSource>(TSource Source, bool SourceOwner =
 
     #region PeekAsyncType
 
-    public async ValueTask<MessagePackType> PeekAsyncTypeAsync() => await Source.PeekAsync<MessagePackTags>() switch
+    public async ValueTask<MessagePackType> PeekTypeAsync() => await Source.PeekAsync<MessagePackTags>() switch
     {
         Nil => MessagePackType.Nil,
         False or True => MessagePackType.Boolean,
@@ -1153,8 +1326,8 @@ public struct AsyncMessagePackReader<TSource>(TSource Source, bool SourceOwner =
 
     #region ReadString
 
-    public async ValueTask<int?> PeekAsyncStringUtf8Length() => (await PeekAsyncStringUtf8LengthWithDataStartAsync())?.Length;
-    public async ValueTask<(int Length, int DataStart)?> PeekAsyncStringUtf8LengthWithDataStartAsync()
+    public async ValueTask<int?> PeekAsyncStringUtf8Length() => (await PeekStringUtf8LengthWithDataStartAsync())?.Length;
+    public async ValueTask<(int Length, int DataStart)?> PeekStringUtf8LengthWithDataStartAsync()
     {
         var bytes = await Source.PeekAsync(5);
         if (bytes.IsEmpty) return null;
@@ -1192,7 +1365,7 @@ public struct AsyncMessagePackReader<TSource>(TSource Source, bool SourceOwner =
     ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
     public async ValueTask<int?> ReadStringUtf8Async(Memory<byte> buffer)
     {
-        var lds = await PeekAsyncStringUtf8LengthWithDataStartAsync();
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
         if (lds is null) return null;
         var (length, data_start) = lds.Value;
         if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
@@ -1208,7 +1381,7 @@ public struct AsyncMessagePackReader<TSource>(TSource Source, bool SourceOwner =
     ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
     public async ValueTask<string?> ReadStringAsync()
     {
-        var lds = await PeekAsyncStringUtf8LengthWithDataStartAsync();
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
         if (lds is null) return null;
         var (length, data_start) = lds.Value;
         if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
@@ -1219,6 +1392,174 @@ public struct AsyncMessagePackReader<TSource>(TSource Source, bool SourceOwner =
         await Source.ReadAsync(len);
         return str;
     }
+
+    #region ReadStringUtf8 With handler
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public async ValueTask<int?> ReadStringUtf8Async(Func<ReadOnlyMemory<byte>, ValueTask> handler)
+    {
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = await Source.PeekAsync(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        await handler(bytes[data_start..]);
+        await Source.ReadAsync(len);
+        return len;
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public async ValueTask<int?> ReadStringUtf8Async<A>(A arg, Func<A, ReadOnlyMemory<byte>, ValueTask> handler)
+    {
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = await Source.PeekAsync(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        await handler(arg, bytes[data_start..]);
+        await Source.ReadAsync(len);
+        return len;
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public async ValueTask<(int Length, R Value)?> ReadStringUtf8Async<R>(Func<ReadOnlyMemory<byte>, ValueTask<R>> handler)
+    {
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = await Source.PeekAsync(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var r = await handler(bytes[data_start..]);
+        await Source.ReadAsync(len);
+        return (len, r);
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public async ValueTask<(int Length, R Value)?> ReadStringUtf8Async<A, R>(A arg, Func<A, ReadOnlyMemory<byte>, ValueTask<R>> handler)
+    {
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = await Source.PeekAsync(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var r = await handler(arg, bytes[data_start..]);
+        await Source.ReadAsync(len);
+        return (len, r);
+    }
+
+    #endregion
+
+    #region ReadString With handler
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public async ValueTask<int?> ReadStringAsync(Func<ReadOnlyMemory<char>, ValueTask> handler)
+    {
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = await Source.PeekAsync(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var utf8 = bytes[data_start..];
+        var arr = ArrayPool<char>.Shared.Rent(Encoding.UTF8.GetMaxCharCount(length));
+        try
+        {
+            var char_count = Encoding.UTF8.GetChars(utf8.Span, arr);
+            await handler(arr.AsMemory(0, char_count));
+            await Source.ReadAsync(len);
+            return len;
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(arr);
+        }
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public async ValueTask<int?> ReadStringAsync<A>(A arg, Func<A, ReadOnlyMemory<char>, ValueTask> handler)
+    {
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = await Source.PeekAsync(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var utf8 = bytes[data_start..];
+        var arr = ArrayPool<char>.Shared.Rent(Encoding.UTF8.GetMaxCharCount(length));
+        try
+        {
+            var char_count = Encoding.UTF8.GetChars(utf8.Span, arr);
+            await handler(arg, arr.AsMemory(0, char_count));
+            await Source.ReadAsync(len);
+            return len;
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(arr);
+        }
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public async ValueTask<(int Length, R Value)?> ReadStringAsync<R>(Func<ReadOnlyMemory<char>, ValueTask<R>> handler)
+    {
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = await Source.PeekAsync(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var utf8 = bytes[data_start..];
+        var arr = ArrayPool<char>.Shared.Rent(Encoding.UTF8.GetMaxCharCount(length));
+        try
+        {
+            var char_count = Encoding.UTF8.GetChars(utf8.Span, arr);
+            var r = await handler(arr.AsMemory(0, char_count));
+            await Source.ReadAsync(len);
+            return (len, r);
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(arr);
+        }
+    }
+
+    ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
+    public async ValueTask<(int Length, R Value)?> ReadStringAsync<A, R>(A arg, Func<A, ReadOnlyMemory<char>, ValueTask<R>> handler)
+    {
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
+        if (lds is null) return null;
+        var (length, data_start) = lds.Value;
+        if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
+        var len = length + data_start;
+        var bytes = await Source.PeekAsync(len);
+        if (bytes.Length < len) throw new InvalidMessagePackDataException();
+        var utf8 = bytes[data_start..];
+        var arr = ArrayPool<char>.Shared.Rent(Encoding.UTF8.GetMaxCharCount(length));
+        try
+        {
+            var char_count = Encoding.UTF8.GetChars(utf8.Span, arr);
+            var r = await handler(arg, arr.AsMemory(0, char_count));
+            await Source.ReadAsync(len);
+            return (len, r);
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(arr);
+        }
+    }
+
+    #endregion
 
     #endregion
 
@@ -1274,7 +1615,7 @@ public struct AsyncMessagePackReader<TSource>(TSource Source, bool SourceOwner =
     ///<exception cref="OutOfMemoryException">If the array is larger than the maximum size allowed by the clr</exception>
     public async ValueTask<byte[]?> ReadBytesArray()
     {
-        var lds = await PeekAsyncStringUtf8LengthWithDataStartAsync();
+        var lds = await PeekStringUtf8LengthWithDataStartAsync();
         if (lds is null) return null;
         var (length, data_start) = lds.Value;
         if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();

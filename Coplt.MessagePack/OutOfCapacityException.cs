@@ -1,6 +1,6 @@
 ﻿namespace Coplt.MessagePack;
 
-public class OutOfCapacityException : Exception
+public class OutOfCapacityException : MessagePackException
 {
     public OutOfCapacityException() { }
     public OutOfCapacityException(string message) : base(message) { }

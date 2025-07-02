@@ -1,6 +1,6 @@
 ﻿namespace Coplt.MessagePack;
 
-public class InvalidMessagePackDataException : Exception
+public class InvalidMessagePackDataException : MessagePackException
 {
     public InvalidMessagePackDataException() { }
     public InvalidMessagePackDataException(string message) : base(message) { }

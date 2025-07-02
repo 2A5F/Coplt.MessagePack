@@ -111,6 +111,7 @@ public ref struct MessagePackWriter<TTarget>(TTarget Target, bool TargetOwner = 
     public void WriteHalf(Half value) => WriteSingle((float)value);
     public void WriteSingle(float value) => Target.Write(Float32, value.BE());
     public void WriteDouble(double value) => Target.Write(Float64, value.BE());
+    public void WriteString(string value) => WriteString((ReadOnlySpan<char>)value);
     public void WriteString(ReadOnlySpan<char> value)
     {
         var arr = ArrayPool<byte>.Shared.Rent(Encoding.UTF8.GetMaxByteCount(value.Length));
@@ -197,7 +198,7 @@ public ref struct MessagePackWriter<TTarget>(TTarget Target, bool TargetOwner = 
     public void WriteGuidAsBytes(Guid value) => Target.Write(Bytes8, (byte)16, value.BE());
 }
 
-public struct AsyncMessagePackWriter<TTarget>(TTarget Target, bool TargetOwner = true) : IDisposable, IAsyncDisposable
+public sealed class AsyncMessagePackWriter<TTarget>(TTarget Target, bool TargetOwner = true) : IDisposable, IAsyncDisposable
     where TTarget : IAsyncWriteTarget
 {
     public TTarget Target = Target;
