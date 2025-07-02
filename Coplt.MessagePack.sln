@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coplt.MessagePack", "Coplt.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{F2DA803B-13D6-4BEC-A170-7F11F5CF6899}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coplt.MessagePack.Analyzer", "Coplt.MessagePack.Analyzer\Coplt.MessagePack.Analyzer.csproj", "{F30A11B5-CEF6-475F-B284-272AA6CCDE1C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{F2DA803B-13D6-4BEC-A170-7F11F5CF6899}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2DA803B-13D6-4BEC-A170-7F11F5CF6899}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2DA803B-13D6-4BEC-A170-7F11F5CF6899}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F30A11B5-CEF6-475F-B284-272AA6CCDE1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F30A11B5-CEF6-475F-B284-272AA6CCDE1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F30A11B5-CEF6-475F-B284-272AA6CCDE1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F30A11B5-CEF6-475F-B284-272AA6CCDE1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
