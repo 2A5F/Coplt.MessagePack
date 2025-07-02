@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Coplt.MessagePack;
 
-public interface IWriteTarget
+public interface IWriteTarget : IDisposable
 {
     public void Write(scoped ReadOnlySpan<byte> data);
     public void Write<T0>(T0 t0) where T0 : unmanaged;
@@ -12,7 +12,7 @@ public interface IWriteTarget
     public void Write<T0, T1, T2>(T0 t0, T1 t1, T2 t2) where T0 : unmanaged where T1 : unmanaged where T2 : unmanaged;
 }
 
-public interface IAsyncWriteTarget
+public interface IAsyncWriteTarget : IDisposable, IAsyncDisposable
 {
     public ValueTask WriteAsync(ReadOnlyMemory<byte> data);
     public ValueTask WriteAsync(scoped ReadOnlySpan<byte> data);
@@ -31,6 +31,7 @@ public readonly unsafe struct ListWriteTarget(List<byte> List) : IWriteTarget
         if (data.Length == 1)
         {
             List.Add(data[0]);
+            return;
         }
         var start = List.Count;
         CollectionsMarshal.SetCount(List, start + data.Length);
@@ -43,6 +44,7 @@ public readonly unsafe struct ListWriteTarget(List<byte> List) : IWriteTarget
         if (sizeof(T0) == 1)
         {
             List.Add(Unsafe.BitCast<T0, byte>(t0));
+            return;
         }
         var start = List.Count;
         CollectionsMarshal.SetCount(List, start + sizeof(T0));
@@ -70,6 +72,8 @@ public readonly unsafe struct ListWriteTarget(List<byte> List) : IWriteTarget
         Unsafe.As<byte, T1>(ref span[sizeof(T0)]) = t1;
         Unsafe.As<byte, T2>(ref span[sizeof(T0) + sizeof(T1)]) = t2;
     }
+
+    public void Dispose() { }
 }
 
 public unsafe ref struct SpanWriteTarget(Span<byte> Span) : IWriteTarget
@@ -108,11 +112,17 @@ public unsafe ref struct SpanWriteTarget(Span<byte> Span) : IWriteTarget
         Unsafe.As<byte, T1>(ref span[sizeof(T0)]) = t1;
         Unsafe.As<byte, T2>(ref span[sizeof(T0) + sizeof(T1)]) = t2;
     }
+
+    public void Dispose() { }
 }
 
-public readonly struct StreamWriteTarget(Stream Stream) : IWriteTarget
+public readonly struct StreamWriteTarget(Stream Stream, bool StreamOwner = false) : IWriteTarget
 {
     public Stream Stream { get; } = Stream;
+    public void Dispose()
+    {
+        if (StreamOwner) Stream.Dispose();
+    }
 
     public void Write(scoped ReadOnlySpan<byte> data)
     {
@@ -136,7 +146,7 @@ public readonly struct StreamWriteTarget(Stream Stream) : IWriteTarget
     }
 }
 
-public readonly struct AsyncStreamWriteTarget(Stream Stream, bool StreamOwner = false) : IDisposable, IAsyncDisposable, IAsyncWriteTarget
+public readonly struct AsyncStreamWriteTarget(Stream Stream, bool StreamOwner = false) : IAsyncWriteTarget
 {
     #region Stream
 

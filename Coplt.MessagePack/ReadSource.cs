@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Coplt.MessagePack;
 
-public interface IReadSource
+public interface IReadSource : IDisposable
 {
     public void Read(int length);
     public void Read<T0>() where T0 : unmanaged;
@@ -17,7 +17,7 @@ public interface IReadSource
     public (T0, T1, T2)? Peek<T0, T1, T2>() where T0 : unmanaged where T1 : unmanaged where T2 : unmanaged;
 }
 
-public interface IAsyncReadSource
+public interface IAsyncReadSource : IDisposable, IAsyncDisposable
 {
     public ValueTask ReadAsync(int length);
     public ValueTask ReadAsync<T0>() where T0 : unmanaged;
@@ -75,9 +75,11 @@ public unsafe ref struct SpanReadSource(ReadOnlySpan<byte> Span) : IReadSource
         var t2 = Unsafe.As<byte, T2>(ref Unsafe.AsRef(in span[sizeof(T0) + sizeof(T1)]));
         return (t0, t1, t2);
     }
+
+    public void Dispose() { }
 }
 
-public struct StreamReadSource(Stream Stream, bool StreamOwner = false) : IReadSource, IDisposable
+public struct StreamReadSource(Stream Stream, bool StreamOwner = false) : IReadSource
 {
     #region Stream
 
@@ -112,11 +114,13 @@ public struct StreamReadSource(Stream Stream, bool StreamOwner = false) : IReadS
         if (m_offset != 0 && m_len + more_length < old_buffer.Length)
         {
             old_buffer.AsSpan(m_offset, m_len).CopyTo(old_buffer.AsSpan(0, m_len));
+            m_offset = 0;
             return;
         }
         var new_buffer = ArrayPool<byte>.Shared.Rent(more_length);
         old_buffer.AsSpan(m_offset, m_len).CopyTo(new_buffer);
         m_tmp_buf = new_buffer;
+        m_offset = 0;
         ArrayPool<byte>.Shared.Return(old_buffer);
     }
 
@@ -124,8 +128,9 @@ public struct StreamReadSource(Stream Stream, bool StreamOwner = false) : IReadS
 
     public void Read(int length)
     {
-        if (m_offset + length > m_len) throw new OutOfCapacityException();
-        m_offset += m_len;
+        if (length > m_len) throw new OutOfCapacityException();
+        m_offset += length;
+        m_len -= length;
     }
     public void Read<T0>() where T0 : unmanaged
         => Read(Unsafe.SizeOf<T0>());
@@ -135,6 +140,7 @@ public struct StreamReadSource(Stream Stream, bool StreamOwner = false) : IReadS
         => Read(Unsafe.SizeOf<T0>() + Unsafe.SizeOf<T1>() + Unsafe.SizeOf<T2>());
     public ReadOnlySpan<byte> Peek(int length)
     {
+        if (length <= m_len) return m_tmp_buf.AsSpan(m_offset, length);
         var len = length - m_len;
         EnsureCapacity(len);
 

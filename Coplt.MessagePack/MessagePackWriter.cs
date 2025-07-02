@@ -7,15 +7,21 @@ using static MessagePackTags;
 
 public static class MessagePackWriter
 {
-    public static MessagePackWriter<TTarget> Create<TTarget>(TTarget Target) where TTarget : IWriteTarget, allows ref struct
-        => new(Target);
-    public static AsyncMessagePackWriter<TTarget> CreateAsync<TTarget>(TTarget Target) where TTarget : IAsyncWriteTarget
-        => new(Target);
+    public static MessagePackWriter<TTarget> Create<TTarget>(TTarget Target, bool TargetOwner = true) where TTarget : IWriteTarget, allows ref struct
+        => new(Target, TargetOwner);
+    public static AsyncMessagePackWriter<TTarget> CreateAsync<TTarget>(TTarget Target, bool TargetOwner = true) where TTarget : IAsyncWriteTarget
+        => new(Target, TargetOwner);
 }
 
-public ref struct MessagePackWriter<TTarget>(TTarget Target) where TTarget : IWriteTarget, allows ref struct
+public ref struct MessagePackWriter<TTarget>(TTarget Target, bool TargetOwner = true) : IDisposable
+    where TTarget : IWriteTarget, allows ref struct
 {
     public TTarget Target = Target;
+
+    public void Dispose()
+    {
+        if (TargetOwner) Target.Dispose();
+    }
 
     public void WriteNull() => Target.Write(Nil);
     public void WriteBoolean(bool value) => Target.Write(value ? True : False);
@@ -191,9 +197,20 @@ public ref struct MessagePackWriter<TTarget>(TTarget Target) where TTarget : IWr
     public void WriteGuidAsBytes(Guid value) => Target.Write(Bytes8, (byte)16, value.BE());
 }
 
-public struct AsyncMessagePackWriter<TTarget>(TTarget Target) where TTarget : IAsyncWriteTarget
+public struct AsyncMessagePackWriter<TTarget>(TTarget Target, bool TargetOwner = true) : IDisposable, IAsyncDisposable
+    where TTarget : IAsyncWriteTarget
 {
     public TTarget Target = Target;
+
+    public void Dispose()
+    {
+        if (TargetOwner) Target.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (TargetOwner) await Target.DisposeAsync();
+    }
 
     public ValueTask WriteNullAsync() => Target.WriteAsync(Nil);
     public ValueTask WriteBooleanAsync(bool value) => Target.WriteAsync(value ? True : False);

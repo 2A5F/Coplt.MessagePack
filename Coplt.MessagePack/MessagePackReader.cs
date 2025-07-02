@@ -6,11 +6,27 @@ namespace Coplt.MessagePack;
 
 using static MessagePackTags;
 
-public ref struct MessagePackReader<TSource>(TSource Source) where TSource : IReadSource, allows ref struct
+public static class MessagePackReader
+{
+    public static MessagePackReader<TSource> Create<TSource>(TSource Source, bool SourceOwner = true) where TSource : IReadSource, allows ref struct
+        => new(Source, SourceOwner);
+}
+
+public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = true) : IDisposable
+    where TSource : IReadSource, allows ref struct
 {
     #region Fields
 
     public TSource Source = Source;
+
+    #endregion
+
+    #region Dispose
+
+    public void Dispose()
+    {
+        if (SourceOwner) Source.Dispose();
+    }
 
     #endregion
 
