@@ -31,8 +31,56 @@ public class TemplateMessagePackConverter(
         sb.AppendLine("[global::Coplt.MessagePack.MessagePackConverterSource]");
         sb.AppendLine(GenBase.Target.Code);
         sb.AppendLine($"    : global::Coplt.MessagePack.IMessagePackConverterSource<{FullName}, {FullName}.{converter_type_name}>");
+        sb.AppendLine($"    , global::Coplt.MessagePack.IMessagePackSerializable<{FullName}>");
+        sb.AppendLine($"    , global::Coplt.MessagePack.IMessagePackAsyncSerializable<{FullName}>");
+        sb.AppendLine($"    , global::Coplt.MessagePack.IMessagePackDeserializable<{FullName}>");
+        sb.AppendLine($"    , global::Coplt.MessagePack.IMessagePackAsyncDeserializable<{FullName}>");
         sb.AppendLine("{");
         sb.AppendLine();
+
+        #region IMessagePackSerializable
+
+        sb.AppendLine(
+            $"    static void global::Coplt.MessagePack.IMessagePackSerializable<{FullName}>.Serialize<TTarget>(ref global::Coplt.MessagePack.MessagePackWriter<TTarget> writer, {FullName} value, global::Coplt.MessagePack.MessagePackSerializerOptions options)");
+        sb.AppendLine($"    {{");
+        sb.AppendLine($"        {converter_type_name}.Write(ref writer, value, options);");
+        sb.AppendLine($"    }}");
+        sb.AppendLine();
+
+        #endregion
+
+        #region IMessagePackAsyncSerializable
+
+        sb.AppendLine(
+            $"    static global::System.Threading.Tasks.ValueTask global::Coplt.MessagePack.IMessagePackAsyncSerializable<{FullName}>.SerializeAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, {FullName} value, global::Coplt.MessagePack.MessagePackSerializerOptions options)");
+        sb.AppendLine($"    {{");
+        sb.AppendLine($"        return {converter_type_name}.WriteAsync(writer, value, options);");
+        sb.AppendLine($"    }}");
+        sb.AppendLine();
+
+        #endregion
+
+        #region IMessagePackDeserializable
+
+        sb.AppendLine(
+            $"    static {FullName} global::Coplt.MessagePack.IMessagePackDeserializable<{FullName}>.Deserialize<TSource>(ref global::Coplt.MessagePack.MessagePackReader<TSource> reader, global::Coplt.MessagePack.MessagePackSerializerOptions options)");
+        sb.AppendLine($"    {{");
+        sb.AppendLine($"        return {converter_type_name}.Read(ref reader, options);");
+        sb.AppendLine($"    }}");
+        sb.AppendLine();
+
+        #endregion
+
+        #region IMessagePackAsyncDeserializable
+
+        sb.AppendLine(
+            $"    static global::System.Threading.Tasks.ValueTask<{FullName}> global::Coplt.MessagePack.IMessagePackAsyncDeserializable<{FullName}>.DeserializeAsync<TSource>(global::Coplt.MessagePack.AsyncMessagePackReader<TSource> reader, global::Coplt.MessagePack.MessagePackSerializerOptions options)");
+        sb.AppendLine($"    {{");
+        sb.AppendLine($"        return {converter_type_name}.ReadAsync(reader, options);");
+        sb.AppendLine($"    }}");
+        sb.AppendLine();
+
+        #endregion
 
         sb.AppendLine($"public readonly partial record struct {converter_type_name}");
         sb.AppendLine($"    : global::Coplt.MessagePack.IMessagePackConverter<{FullName}>");
@@ -100,7 +148,7 @@ public class TemplateMessagePackConverter(
         #region Async Write
 
         sb.AppendLine(
-            $"    public static async ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, {FullName} value, MessagePackSerializerOptions options)");
+            $"    public static async global::System.Threading.Tasks.ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, {FullName} value, MessagePackSerializerOptions options)");
         sb.AppendLine("        where TTarget : IAsyncWriteTarget");
         sb.AppendLine("    {");
         if (AsArray)
@@ -126,7 +174,7 @@ public class TemplateMessagePackConverter(
         #region Async Read
 
         sb.AppendLine(
-            $"    public static async ValueTask<{FullName}> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)");
+            $"    public static async global::System.Threading.Tasks.ValueTask<{FullName}> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)");
         sb.AppendLine("        where TSource : IAsyncReadSource");
         sb.AppendLine("    {");
         sb.AppendLine("        var t = await reader.PeekTypeAsync();");

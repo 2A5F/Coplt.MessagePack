@@ -2,7 +2,7 @@
 
 public interface IMessagePackWritable<in T> where T : allows ref struct
 {
-    public static abstract void Write<TTarget>(ref MessagePackWriter<TTarget> writer, T value, MessagePackSerializerOptions options)
+    public static abstract void Write<TTarget>(scoped ref MessagePackWriter<TTarget> writer, T value, MessagePackSerializerOptions options)
         where TTarget : IWriteTarget, allows ref struct;
 }
 
@@ -14,7 +14,7 @@ public interface IAsyncMessagePackWritable<in T>
 
 public interface IMessagePackReadable<out T> where T : allows ref struct
 {
-    public static abstract T Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+    public static abstract T Read<TSource>(scoped ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
         where TSource : IReadSource, allows ref struct;
 }
 

@@ -22,6 +22,7 @@ public class MessagePackGenerator : IIncrementalGenerator
     );
     public static string? GetConverter(ITypeSymbol symbol, bool AsBytes = false)
     {
+        if (symbol is INamedTypeSymbol and ({ IsUnboundGenericType: true } or { IsFileLocal: true })) return null;
         switch (symbol.SpecialType)
         {
             case SpecialType.System_Object:
@@ -69,26 +70,54 @@ public class MessagePackGenerator : IIncrementalGenerator
                 return "global::Coplt.MessagePack.Converters.IntPtrConvert";
             case SpecialType.System_UIntPtr:
                 return "global::Coplt.MessagePack.Converters.UIntPtrConvert";
-            case SpecialType.System_Array:
-                break;
-            case SpecialType.System_Collections_IEnumerable:
-                break;
             case SpecialType.System_Collections_Generic_IEnumerable_T:
-                break;
+            {
+                var named = (INamedTypeSymbol)symbol;
+                var underlying = named.TypeArguments[0];
+                var underlying_converter = GetConverter(underlying)!;
+                var underlying_name = underlying.ToDisplayString();
+                return $"global::Coplt.MessagePack.Converters.IEnumerableConverter<{underlying_name}, {underlying_converter}>";
+            }
             case SpecialType.System_Collections_Generic_IList_T:
-                break;
+            {
+                var named = (INamedTypeSymbol)symbol;
+                var underlying = named.TypeArguments[0];
+                var underlying_converter = GetConverter(underlying)!;
+                var underlying_name = underlying.ToDisplayString();
+                return $"global::Coplt.MessagePack.Converters.IListConverter<{underlying_name}, {underlying_converter}>";
+            }
             case SpecialType.System_Collections_Generic_ICollection_T:
-                break;
-            case SpecialType.System_Collections_IEnumerator:
-                break;
-            case SpecialType.System_Collections_Generic_IEnumerator_T:
-                break;
+            {
+                var named = (INamedTypeSymbol)symbol;
+                var underlying = named.TypeArguments[0];
+                var underlying_converter = GetConverter(underlying)!;
+                var underlying_name = underlying.ToDisplayString();
+                return $"global::Coplt.MessagePack.Converters.ICollectionConverter<{underlying_name}, {underlying_converter}>";
+            }
             case SpecialType.System_Collections_Generic_IReadOnlyList_T:
-                break;
+            {
+                var named = (INamedTypeSymbol)symbol;
+                var underlying = named.TypeArguments[0];
+                var underlying_converter = GetConverter(underlying)!;
+                var underlying_name = underlying.ToDisplayString();
+                return $"global::Coplt.MessagePack.Converters.IReadOnlyListConverter<{underlying_name}, {underlying_converter}>";
+            }
             case SpecialType.System_Collections_Generic_IReadOnlyCollection_T:
-                break;
+            {
+                var named = (INamedTypeSymbol)symbol;
+                var underlying = named.TypeArguments[0];
+                var underlying_converter = GetConverter(underlying)!;
+                var underlying_name = underlying.ToDisplayString();
+                return $"global::Coplt.MessagePack.Converters.IReadOnlyCollectionConverter<{underlying_name}, {underlying_converter}>";
+            }
             case SpecialType.System_Nullable_T:
-                break;
+            {
+                var named = (INamedTypeSymbol)symbol;
+                var underlying = named.TypeArguments[0];
+                var underlying_converter = GetConverter(underlying)!;
+                var underlying_name = underlying.ToDisplayString();
+                return $"global::Coplt.MessagePack.Converters.NullableConverter<{underlying_name}, {underlying_converter}>";
+            }
             case SpecialType.System_DateTime:
                 return "global::Coplt.MessagePack.Converters.DateTimeConvert";
             default:
@@ -104,6 +133,27 @@ public class MessagePackGenerator : IIncrementalGenerator
             if (element_converter is null) return null;
             var element_name = element.ToDisplayString(TypeDisplayFormat);
             return $"global::Coplt.MessagePack.Converters.ArrayConverter<{element_name}, {element_converter}>";
+        }
+        {
+            if (symbol is INamedTypeSymbol named)
+            {
+                if (named.IsGenericType)
+                {
+                    var type = named.ConstructUnboundGenericType().ToDisplayString(TypeDisplayFormat);
+                    if (type == "global::System.Collections.Generic.Dictionary<,>")
+                    {
+                        var key = named.TypeArguments[0];
+                        var value = named.TypeArguments[0];
+                        var key_converter = GetConverter(key);
+                        if (key_converter is null) return null;
+                        var value_converter = GetConverter(value);
+                        if (value_converter is null) return null;
+                        var key_name = key.ToDisplayString(TypeDisplayFormat);
+                        var value_name = value.ToDisplayString(TypeDisplayFormat);
+                        return $"global::Coplt.MessagePack.Converters.DictionaryConverter<{key_name}, {value_name}, {key_converter}, {value_converter}>";
+                    }
+                }
+            }
         }
         return null;
     }

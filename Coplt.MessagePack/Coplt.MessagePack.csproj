@@ -6,10 +6,37 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <IsAotCompatible>true</IsAotCompatible>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <Version>0.1.0</Version>
+        <PackageProjectUrl>https://github.com/2A5F/Coplt.MessagePack</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/2A5F/Coplt.MessagePack</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <Description>Memory-optimized message pack</Description>
+        <Authors>Coplt</Authors>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Coplt.Union" Version="0.17.0" />
+        <PackageReference Include="Coplt.Union" Version="0.17.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Coplt.MessagePack.Analyzer\Coplt.MessagePack.Analyzer.csproj" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <None Include="..\LICENSE.md">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
+        <None Include="..\README.md">
+            <Pack>True</Pack>
+            <PackagePath>/</PackagePath>
+        </None>
+        <None Include="..\Coplt.MessagePack.Analyzer\bin\Release\netstandard2.0\Coplt.MessagePack.Analyzer.dll" Visible="false" Condition="'$(Configuration)' == 'Release'">
+            <Pack>True</Pack>
+            <PackagePath>analyzers/dotnet/cs</PackagePath>
+        </None>
     </ItemGroup>
 
 </Project>
