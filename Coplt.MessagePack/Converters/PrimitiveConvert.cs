@@ -1,4 +1,6 @@
-﻿namespace Coplt.MessagePack.Converters;
+﻿using System.Text;
+
+namespace Coplt.MessagePack.Converters;
 
 public readonly record struct BooleanConvert : IMessagePackConverter<bool>
 {
@@ -185,4 +187,140 @@ public readonly record struct Int128Convert : IMessagePackConverter<Int128>
     public static async ValueTask<Int128> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)
         where TSource : IAsyncReadSource
         => await reader.ReadInt128FromBytes() ?? throw new MessagePackException($"Expected {nameof(Int128)} but not");
+}
+
+public readonly record struct SingleConvert : IMessagePackConverter<float>
+{
+    public static void Write<TTarget>(ref MessagePackWriter<TTarget> writer, float value, MessagePackSerializerOptions options)
+        where TTarget : IWriteTarget, allows ref struct
+        => writer.WriteSingle(value);
+    public static float Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IReadSource, allows ref struct
+        => reader.ReadSingle() ?? throw new MessagePackException($"Expected {nameof(Single)} but not");
+
+    public static ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, float value, MessagePackSerializerOptions options)
+        where TTarget : IAsyncWriteTarget
+        => writer.WriteSingleAsync(value);
+    public static async ValueTask<float> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IAsyncReadSource
+        => await reader.ReadSingleAsync() ?? throw new MessagePackException($"Expected {nameof(Single)} but not");
+}
+
+public readonly record struct DoubleConvert : IMessagePackConverter<double>
+{
+    public static void Write<TTarget>(ref MessagePackWriter<TTarget> writer, double value, MessagePackSerializerOptions options)
+        where TTarget : IWriteTarget, allows ref struct
+        => writer.WriteDouble(value);
+    public static double Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IReadSource, allows ref struct
+        => reader.ReadDouble() ?? throw new MessagePackException($"Expected {nameof(Double)} but not");
+
+    public static ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, double value, MessagePackSerializerOptions options)
+        where TTarget : IAsyncWriteTarget
+        => writer.WriteDoubleAsync(value);
+    public static async ValueTask<double> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IAsyncReadSource
+        => await reader.ReadDoubleAsync() ?? throw new MessagePackException($"Expected {nameof(Double)} but not");
+}
+
+public readonly record struct CharConvert : IMessagePackConverter<char>
+{
+    public static void Write<TTarget>(ref MessagePackWriter<TTarget> writer, char value, MessagePackSerializerOptions options)
+        where TTarget : IWriteTarget, allows ref struct
+        => writer.WriteUInt16(value);
+    public static char Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IReadSource, allows ref struct
+        => (char)(reader.ReadUInt16() ?? throw new MessagePackException($"Expected {nameof(Char)} but not"));
+
+    public static ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, char value, MessagePackSerializerOptions options)
+        where TTarget : IAsyncWriteTarget
+        => writer.WriteUInt16Async(value);
+    public static async ValueTask<char> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IAsyncReadSource
+        => (char)(await reader.ReadUInt16Async() ?? throw new MessagePackException($"Expected {nameof(Char)} but not"));
+}
+
+public readonly record struct RuneConvert : IMessagePackConverter<Rune>
+{
+    public static void Write<TTarget>(ref MessagePackWriter<TTarget> writer, Rune value, MessagePackSerializerOptions options)
+        where TTarget : IWriteTarget, allows ref struct
+        => writer.WriteUInt32((uint)value.Value);
+    public static Rune Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IReadSource, allows ref struct
+        => new(reader.ReadUInt32() ?? throw new MessagePackException($"Expected {nameof(Rune)} but not"));
+
+    public static ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, Rune value, MessagePackSerializerOptions options)
+        where TTarget : IAsyncWriteTarget
+        => writer.WriteUInt32Async((uint)value.Value);
+    public static async ValueTask<Rune> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IAsyncReadSource
+        => new(await reader.ReadUInt32Async() ?? throw new MessagePackException($"Expected {nameof(Rune)} but not"));
+}
+
+public readonly record struct DecimalConvert : IMessagePackConverter<decimal>
+{
+    public static void Write<TTarget>(ref MessagePackWriter<TTarget> writer, decimal value, MessagePackSerializerOptions options)
+        where TTarget : IWriteTarget, allows ref struct
+        => writer.WriteDecimalAsBytes(value);
+    public static decimal Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IReadSource, allows ref struct
+        => reader.ReadDecimalFromBytes() ?? throw new MessagePackException($"Expected {nameof(Decimal)} but not");
+
+    public static ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, decimal value, MessagePackSerializerOptions options)
+        where TTarget : IAsyncWriteTarget
+        => writer.WriteDecimalAsBytes(value);
+    public static async ValueTask<decimal> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IAsyncReadSource
+        => await reader.ReadDecimalFromBytesAsync() ?? throw new MessagePackException($"Expected {nameof(Decimal)} but not");
+}
+
+public readonly record struct GuidConvert : IMessagePackConverter<Guid>
+{
+    public static void Write<TTarget>(ref MessagePackWriter<TTarget> writer, Guid value, MessagePackSerializerOptions options)
+        where TTarget : IWriteTarget, allows ref struct
+        => writer.WriteGuidAsBytes(value);
+    public static Guid Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IReadSource, allows ref struct
+        => reader.ReadGuidFromBytes() ?? throw new MessagePackException($"Expected {nameof(Guid)} but not");
+
+    public static ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, Guid value, MessagePackSerializerOptions options)
+        where TTarget : IAsyncWriteTarget
+        => writer.WriteGuidAsync(value);
+    public static async ValueTask<Guid> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IAsyncReadSource
+        => await reader.ReadGuidFromBytesAsync() ?? throw new MessagePackException($"Expected {nameof(Guid)} but not");
+}
+
+public readonly record struct IntPtrConvert : IMessagePackConverter<nint>
+{
+    public static void Write<TTarget>(ref MessagePackWriter<TTarget> writer, nint value, MessagePackSerializerOptions options)
+        where TTarget : IWriteTarget, allows ref struct
+        => writer.WriteInt64(value);
+    public static nint Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IReadSource, allows ref struct
+        => (nint)(reader.ReadInt64() ?? throw new MessagePackException($"Expected {nameof(IntPtr)} but not"));
+
+    public static ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, nint value, MessagePackSerializerOptions options)
+        where TTarget : IAsyncWriteTarget
+        => writer.WriteInt64Async(value);
+    public static async ValueTask<nint> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IAsyncReadSource
+        => (nint)(await reader.ReadInt64Async() ?? throw new MessagePackException($"Expected {nameof(IntPtr)} but not"));
+}
+
+public readonly record struct UIntPtrConvert : IMessagePackConverter<nuint>
+{
+    public static void Write<TTarget>(ref MessagePackWriter<TTarget> writer, nuint value, MessagePackSerializerOptions options)
+        where TTarget : IWriteTarget, allows ref struct
+        => writer.WriteUInt64(value);
+    public static nuint Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IReadSource, allows ref struct
+        => (nuint)(reader.ReadUInt64() ?? throw new MessagePackException($"Expected {nameof(UIntPtr)} but not"));
+
+    public static ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, nuint value, MessagePackSerializerOptions options)
+        where TTarget : IAsyncWriteTarget
+        => writer.WriteUInt64Async(value);
+    public static async ValueTask<nuint> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+        where TSource : IAsyncReadSource
+        => (nuint)(await reader.ReadUInt64Async() ?? throw new MessagePackException($"Expected {nameof(UIntPtr)} but not"));
 }

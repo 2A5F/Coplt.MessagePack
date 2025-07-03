@@ -367,6 +367,7 @@ public sealed class AsyncMessagePackWriter<TTarget>(TTarget Target, bool TargetO
         }
     }
 
+    public ValueTask WriteDecimalAsBytes(decimal value) => Target.WriteAsync(Bytes8, (byte)16, value.BE());
     public ValueTask WriteGuidAsync(Guid value) => Target.WriteAsync(Bytes8, (byte)16, value.BE());
     public ValueTask WriteUInt128AsBytes(UInt128 value) => Target.WriteAsync(Bytes8, (byte)16, value.BE());
     public ValueTask WriteInt128AsBytes(Int128 value) => Target.WriteAsync(Bytes8, (byte)16, value.BE());

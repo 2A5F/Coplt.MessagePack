@@ -6,6 +6,8 @@ public record MessagePackSerializerOptions
 
     /// <inheritdoc cref="MessagePackStructMode"/>
     public MessagePackStructMode StructMode { get; init; } = MessagePackStructMode.Auto;
+    /// <inheritdoc cref="MessagePackEnumMode"/>
+    public MessagePackEnumMode EnumMode { get; init; } = MessagePackEnumMode.Auto;
 }
 
 /// <summary>
@@ -25,4 +27,11 @@ public enum MessagePackStructMode : byte
     /// Serialize to map
     /// </summary>
     AsMap,
+}
+
+public enum MessagePackEnumMode : byte
+{
+    Auto,
+    Number,
+    String,
 }
