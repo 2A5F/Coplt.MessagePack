@@ -17,13 +17,7 @@ public readonly record struct EnumConverter<TEnum, TUnderlying, TConverter> : IM
         var underlying = TConverter.Read(ref reader, options);
         return (TEnum)(object)underlying;
     }
-}
 
-public readonly record struct AsyncEnumConverter<TEnum, TUnderlying, TConverter> : IAsyncMessagePackConverter<TEnum>
-    where TEnum : struct, Enum
-    where TUnderlying : unmanaged
-    where TConverter : IAsyncMessagePackConverter<TUnderlying>
-{
     public static async ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, TEnum value, MessagePackSerializerOptions options)
         where TTarget : IAsyncWriteTarget
     {

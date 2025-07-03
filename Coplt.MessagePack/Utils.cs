@@ -35,4 +35,21 @@ internal static class Utils
         vec = Vector128.Shuffle(vec, Vector128.Create((byte)3, 2, 1, 0, 7, 6, 5, 4, 15, 14, 13, 12, 11, 10, 9, 8));
         return Unsafe.BitCast<Vector128<byte>, decimal>(vec);
     }
+
+    [MethodImpl(256 | 512)]
+    public static UInt128 BE(this UInt128 value)
+    {
+        if (!BitConverter.IsLittleEndian) return value;
+        var vec = Unsafe.BitCast<UInt128, Vector128<byte>>(value);
+        vec = Vector128.Shuffle(vec, Vector128.Create((byte)15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0));
+        return Unsafe.BitCast<Vector128<byte>, UInt128>(vec);
+    }
+    [MethodImpl(256 | 512)]
+    public static Int128 BE(this Int128 value)
+    {
+        if (!BitConverter.IsLittleEndian) return value;
+        var vec = Unsafe.BitCast<Int128, Vector128<byte>>(value);
+        vec = Vector128.Shuffle(vec, Vector128.Create((byte)15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0));
+        return Unsafe.BitCast<Vector128<byte>, Int128>(vec);
+    }
 }

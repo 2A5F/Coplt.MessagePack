@@ -23,11 +23,7 @@ public readonly record struct ArrayConverter<T, TConverter> : IMessagePackConver
         }
         return array;
     }
-}
 
-public readonly record struct AsyncArrayConverter<T, TConverter> : IAsyncMessagePackConverter<T[]>
-    where TConverter : IAsyncMessagePackConverter<T>
-{
     public static async ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, T[] value, MessagePackSerializerOptions options)
         where TTarget : IAsyncWriteTarget
     {

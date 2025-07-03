@@ -23,11 +23,6 @@ public readonly record struct EnumStringConverter<TEnum> : IMessagePackConverter
                 ?? throw new MessagePackException("Expected string but not");
         return r.Value;
     }
-}
-
-public readonly record struct AsyncEnumStringConverter<TEnum> : IAsyncMessagePackConverter<TEnum>
-    where TEnum : struct, Enum
-{
     public static async ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, TEnum value, MessagePackSerializerOptions options)
         where TTarget : IAsyncWriteTarget
     {

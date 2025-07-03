@@ -923,6 +923,28 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
     }
 
     #endregion
+
+    #region Int128
+
+    public UInt128? ReadUInt128FromBytes()
+    {
+        var pr = Source.Peek<MessagePackTags, byte, UInt128>();
+        if (pr is null) return null;
+        var (tag, len, val) = pr.GetValueOrDefault();
+        if (tag == Bytes8 || len != 16) return null;
+        return val.BE();
+    }
+
+    public Int128? ReadInt128FromBytes()
+    {
+        var pr = Source.Peek<MessagePackTags, byte, Int128>();
+        if (pr is null) return null;
+        var (tag, len, val) = pr.GetValueOrDefault();
+        if (tag == Bytes8 || len != 16) return null;
+        return val.BE();
+    }
+
+    #endregion
 }
 
 public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceOwner = true) : IDisposable, IAsyncDisposable
@@ -1276,21 +1298,21 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         return MessagePackInteger.None;
     }
 
-    public async ValueTask<byte?> ReadByte() => (await ReadIntegerAsync()).TryToByte();
+    public async ValueTask<byte?> ReadByteAsync() => (await ReadIntegerAsync()).TryToByte();
 
-    public async ValueTask<ushort?> ReadUInt16() => (await ReadIntegerAsync()).TryToUInt16();
+    public async ValueTask<ushort?> ReadUInt16Async() => (await ReadIntegerAsync()).TryToUInt16();
 
-    public async ValueTask<uint?> ReadUInt32() => (await ReadIntegerAsync()).TryToUInt32();
+    public async ValueTask<uint?> ReadUInt32Async() => (await ReadIntegerAsync()).TryToUInt32();
 
-    public async ValueTask<ulong?> ReadUInt64() => (await ReadIntegerAsync()).TryToUInt64();
+    public async ValueTask<ulong?> ReadUInt64Async() => (await ReadIntegerAsync()).TryToUInt64();
 
-    public async ValueTask<sbyte?> ReadSByte() => (await ReadIntegerAsync()).TryToSByte();
+    public async ValueTask<sbyte?> ReadSByteAsync() => (await ReadIntegerAsync()).TryToSByte();
 
-    public async ValueTask<short?> ReadInt16() => (await ReadIntegerAsync()).TryToInt16();
+    public async ValueTask<short?> ReadInt16Async() => (await ReadIntegerAsync()).TryToInt16();
 
-    public async ValueTask<int?> ReadInt32() => (await ReadIntegerAsync()).TryToInt32();
+    public async ValueTask<int?> ReadInt32Async() => (await ReadIntegerAsync()).TryToInt32();
 
-    public async ValueTask<long?> ReadInt64() => (await ReadIntegerAsync()).TryToInt64();
+    public async ValueTask<long?> ReadInt64Async() => (await ReadIntegerAsync()).TryToInt64();
 
     #endregion
 
@@ -1326,7 +1348,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
 
     #region ReadString
 
-    public async ValueTask<int?> PeekAsyncStringUtf8Length() => (await PeekStringUtf8LengthWithDataStartAsync())?.Length;
+    public async ValueTask<int?> PeekStringUtf8LengthAsync() => (await PeekStringUtf8LengthWithDataStartAsync())?.Length;
     public async ValueTask<(int Length, int DataStart)?> PeekStringUtf8LengthWithDataStartAsync()
     {
         var bytes = await Source.PeekAsync(5);
@@ -1361,7 +1383,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         return null;
     }
 
-    /// <exception cref="ArgumentOutOfRangeException">Will throw if the buffer is not large enough. Please use <see cref="PeekAsyncStringUtf8Length"/> to query the length first.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Will throw if the buffer is not large enough. Please use <see cref="PeekStringUtf8LengthAsync"/> to query the length first.</exception>
     ///<exception cref="OutOfMemoryException">If the string is larger than the maximum size allowed by the clr</exception>
     public async ValueTask<int?> ReadStringUtf8Async(Memory<byte> buffer)
     {
@@ -1565,8 +1587,8 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
 
     #region ReadBytes
 
-    public async ValueTask<int?> PeekAsyncBytesLengthAsync() => (await PeekAsyncBytesLengthWithDataStartAsync())?.Length;
-    public async ValueTask<(int Length, int DataStart)?> PeekAsyncBytesLengthWithDataStartAsync()
+    public async ValueTask<int?> PeekBytesLengthAsync() => (await PeekBytesLengthWithDataStartAsync())?.Length;
+    public async ValueTask<(int Length, int DataStart)?> PeekBytesLengthWithDataStartAsync()
     {
         var bytes = await Source.PeekAsync(5);
         if (bytes.IsEmpty) return null;
@@ -1595,11 +1617,11 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         return null;
     }
 
-    /// <exception cref="ArgumentOutOfRangeException">Will throw if the buffer is not large enough. Please use <see cref="PeekAsyncBytesLengthAsync"/> to query the length first.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Will throw if the buffer is not large enough. Please use <see cref="PeekBytesLengthAsync"/> to query the length first.</exception>
     ///<exception cref="OutOfMemoryException">If the array is larger than the maximum size allowed by the clr</exception>
-    public async ValueTask<int?> ReadBytes(Memory<byte> buffer)
+    public async ValueTask<int?> ReadBytesAsync(Memory<byte> buffer)
     {
-        var lds = await PeekAsyncBytesLengthWithDataStartAsync();
+        var lds = await PeekBytesLengthWithDataStartAsync();
         if (lds is null) return null;
         var (length, data_start) = lds.Value;
         if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
@@ -1613,7 +1635,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
     }
 
     ///<exception cref="OutOfMemoryException">If the array is larger than the maximum size allowed by the clr</exception>
-    public async ValueTask<byte[]?> ReadBytesArray()
+    public async ValueTask<byte[]?> ReadBytesArrayAsync()
     {
         var lds = await PeekStringUtf8LengthWithDataStartAsync();
         if (lds is null) return null;
@@ -1628,9 +1650,9 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
     }
 
     ///<exception cref="OutOfMemoryException">If the array is larger than the maximum size allowed by the clr</exception>
-    public async ValueTask<int?> ReadBytes(Func<ReadOnlyMemory<byte>, ValueTask> handler)
+    public async ValueTask<int?> ReadBytesAsync(Func<ReadOnlyMemory<byte>, ValueTask> handler)
     {
-        var lds = await PeekAsyncBytesLengthWithDataStartAsync();
+        var lds = await PeekBytesLengthWithDataStartAsync();
         if (lds is null) return null;
         var (length, data_start) = lds.Value;
         if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
@@ -1643,9 +1665,9 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
     }
 
     ///<exception cref="OutOfMemoryException">If the array is larger than the maximum size allowed by the clr</exception>
-    public async ValueTask<int?> ReadBytes<A>(A arg, Func<A, ReadOnlyMemory<byte>, ValueTask> handler)
+    public async ValueTask<int?> ReadBytesAsync<A>(A arg, Func<A, ReadOnlyMemory<byte>, ValueTask> handler)
     {
-        var lds = await PeekAsyncBytesLengthWithDataStartAsync();
+        var lds = await PeekBytesLengthWithDataStartAsync();
         if (lds is null) return null;
         var (length, data_start) = lds.Value;
         if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
@@ -1658,9 +1680,9 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
     }
 
     ///<exception cref="OutOfMemoryException">If the array is larger than the maximum size allowed by the clr</exception>
-    public async ValueTask<(int Length, R Value)?> ReadBytes<R>(Func<ReadOnlyMemory<byte>, ValueTask<R>> handler)
+    public async ValueTask<(int Length, R Value)?> ReadBytesAsync<R>(Func<ReadOnlyMemory<byte>, ValueTask<R>> handler)
     {
-        var lds = await PeekAsyncBytesLengthWithDataStartAsync();
+        var lds = await PeekBytesLengthWithDataStartAsync();
         if (lds is null) return null;
         var (length, data_start) = lds.Value;
         if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
@@ -1673,9 +1695,9 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
     }
 
     ///<exception cref="OutOfMemoryException">If the array is larger than the maximum size allowed by the clr</exception>
-    public async ValueTask<(int Length, R Value)?> ReadBytes<A, R>(A arg, Func<A, ReadOnlyMemory<byte>, ValueTask<R>> handler)
+    public async ValueTask<(int Length, R Value)?> ReadBytesAsync<A, R>(A arg, Func<A, ReadOnlyMemory<byte>, ValueTask<R>> handler)
     {
-        var lds = await PeekAsyncBytesLengthWithDataStartAsync();
+        var lds = await PeekBytesLengthWithDataStartAsync();
         if (lds is null) return null;
         var (length, data_start) = lds.Value;
         if (length < 0 || length > Array.MaxLength) throw new OutOfMemoryException();
@@ -1827,6 +1849,28 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
     public async ValueTask<Guid?> ReadGuidFromBytesAsync()
     {
         var pr = await Source.PeekAsync<MessagePackTags, byte, Guid>();
+        if (pr is null) return null;
+        var (tag, len, val) = pr.GetValueOrDefault();
+        if (tag == Bytes8 || len != 16) return null;
+        return val.BE();
+    }
+
+    #endregion
+
+    #region Int128
+
+    public async ValueTask<UInt128?> ReadUInt128FromBytes()
+    {
+        var pr = await Source.PeekAsync<MessagePackTags, byte, UInt128>();
+        if (pr is null) return null;
+        var (tag, len, val) = pr.GetValueOrDefault();
+        if (tag == Bytes8 || len != 16) return null;
+        return val.BE();
+    }
+
+    public async ValueTask<Int128?> ReadInt128FromBytes()
+    {
+        var pr = await Source.PeekAsync<MessagePackTags, byte, Int128>();
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
         if (tag == Bytes8 || len != 16) return null;

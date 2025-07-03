@@ -1,12 +1,14 @@
-﻿namespace Coplt.MessagePack.Converters;
+﻿using System.Collections.Frozen;
 
-public readonly record struct DictionaryConverter<TKey, TValue, TKeyConverter, TValueConverter>
-    : IMessagePackConverter<Dictionary<TKey, TValue>>
+namespace Coplt.MessagePack.Converters;
+
+public readonly record struct FrozenDictionaryConverter<TKey, TValue, TKeyConverter, TValueConverter>
+    : IMessagePackConverter<FrozenDictionary<TKey, TValue>>
     where TKey : notnull
     where TKeyConverter : IMessagePackConverter<TKey>
     where TValueConverter : IMessagePackConverter<TValue>
 {
-    public static void Write<TTarget>(ref MessagePackWriter<TTarget> writer, Dictionary<TKey, TValue> value, MessagePackSerializerOptions options)
+    public static void Write<TTarget>(ref MessagePackWriter<TTarget> writer, FrozenDictionary<TKey, TValue> value, MessagePackSerializerOptions options)
         where TTarget : IWriteTarget, allows ref struct
     {
         writer.WriteMapHead(value.Count);
@@ -16,7 +18,7 @@ public readonly record struct DictionaryConverter<TKey, TValue, TKeyConverter, T
             TValueConverter.Write(ref writer, v, options);
         }
     }
-    public static Dictionary<TKey, TValue> Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+    public static FrozenDictionary<TKey, TValue> Read<TSource>(ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options)
         where TSource : IReadSource, allows ref struct
     {
         var len = reader.ReadMapHead() ?? throw new MessagePackException("Expected map but not");
@@ -27,10 +29,10 @@ public readonly record struct DictionaryConverter<TKey, TValue, TKeyConverter, T
             var v = TValueConverter.Read(ref reader, options);
             dict.Add(k, v);
         }
-        return dict;
+        return dict.ToFrozenDictionary();
     }
 
-    public static async ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, Dictionary<TKey, TValue> value,
+    public static async ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, FrozenDictionary<TKey, TValue> value,
         MessagePackSerializerOptions options)
         where TTarget : IAsyncWriteTarget
     {
@@ -41,7 +43,8 @@ public readonly record struct DictionaryConverter<TKey, TValue, TKeyConverter, T
             await TValueConverter.WriteAsync(writer, v, options);
         }
     }
-    public static async ValueTask<Dictionary<TKey, TValue>> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options)
+    public static async ValueTask<FrozenDictionary<TKey, TValue>> ReadAsync<TSource>(AsyncMessagePackReader<TSource> reader,
+        MessagePackSerializerOptions options)
         where TSource : IAsyncReadSource
     {
         var len = await reader.ReadMapHeadAsync() ?? throw new MessagePackException("Expected map but not");
@@ -52,6 +55,6 @@ public readonly record struct DictionaryConverter<TKey, TValue, TKeyConverter, T
             var v = await TValueConverter.ReadAsync(reader, options);
             dict.Add(k, v);
         }
-        return dict;
+        return dict.ToFrozenDictionary();
     }
 }

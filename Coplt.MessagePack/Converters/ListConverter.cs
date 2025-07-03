@@ -23,11 +23,6 @@ public readonly record struct ListConverter<T, TConverter> : IMessagePackConvert
         }
         return list;
     }
-}
-
-public readonly record struct AsyncListConverter<T, TConverter> : IAsyncMessagePackConverter<List<T>>
-    where TConverter : IAsyncMessagePackConverter<T>
-{
     public static async ValueTask WriteAsync<TTarget>(AsyncMessagePackWriter<TTarget> writer, List<T> value, MessagePackSerializerOptions options)
         where TTarget : IAsyncWriteTarget
     {
