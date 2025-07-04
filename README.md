@@ -23,6 +23,7 @@ Assert.That(b, Is.EqualTo(a));
 ## Todo
 
 - [ ] Generators support generics
+- [ ] Support required
 - [ ] Support `non ()` constructor
 - [ ] Support for more system library types
 - [ ] Wait .Net 10 extensions, `MessagePackSerializer.Instance` replace to `MessagePackSerializer`
