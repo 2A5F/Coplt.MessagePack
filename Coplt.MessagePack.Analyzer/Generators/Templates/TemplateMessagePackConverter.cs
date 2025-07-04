@@ -340,7 +340,7 @@ public class TemplateMessagePackConverter(
         sb.AppendLine($"{tab}        default: reader.SkipOnce(); break;");
         sb.AppendLine($"{tab}    }}");
         sb.AppendLine($"{tab}}}");
-        sb.AppendLine($"{tab}return default!;");
+        sb.AppendLine($"{tab}return value;");
     }
 
     #endregion
@@ -385,7 +385,7 @@ public class TemplateMessagePackConverter(
         sb.AppendLine($"{tab}        default: await reader.SkipOnceAsync(); break;");
         sb.AppendLine($"{tab}    }}");
         sb.AppendLine($"{tab}}}");
-        sb.AppendLine($"{tab}return default!;");
+        sb.AppendLine($"{tab}return value;");
     }
 
     #endregion

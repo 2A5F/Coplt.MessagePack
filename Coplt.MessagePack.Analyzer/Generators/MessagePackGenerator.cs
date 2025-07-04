@@ -20,9 +20,15 @@ public class MessagePackGenerator : IIncrementalGenerator
         SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
         SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
     );
-    public static string? GetConverter(ITypeSymbol symbol, bool AsBytes = false)
+    public static string? GetConverter(ITypeSymbol symbol, bool AsBytes = false, bool NullableClass = true)
     {
         if (symbol is INamedTypeSymbol and ({ IsUnboundGenericType: true } or { IsFileLocal: true })) return null;
+        if (symbol is { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated } && NullableClass)
+        {
+            var name = symbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToDisplayString(TypeDisplayFormat);
+            var converter = GetConverter(symbol, AsBytes, false);
+            return $"global::Coplt.MessagePack.Converters.NullableClassConverter<{name}, {converter}>";
+        }
         switch (symbol.SpecialType)
         {
             case SpecialType.System_Object:
@@ -120,8 +126,6 @@ public class MessagePackGenerator : IIncrementalGenerator
             }
             case SpecialType.System_DateTime:
                 return "global::Coplt.MessagePack.Converters.DateTimeConvert";
-            default:
-                break;
         }
         if (symbol is IArrayTypeSymbol array)
         {
@@ -134,24 +138,48 @@ public class MessagePackGenerator : IIncrementalGenerator
             var element_name = element.ToDisplayString(TypeDisplayFormat);
             return $"global::Coplt.MessagePack.Converters.ArrayConverter<{element_name}, {element_converter}>";
         }
+        else
         {
-            if (symbol is INamedTypeSymbol named)
+            if (symbol is not INamedTypeSymbol named) return null;
+            if (
+                named.GetAttributes()
+                    .FirstOrDefault(a =>
+                        a.AttributeClass?.ToDisplayString() == "Coplt.MessagePack.MessagePackAttribute"
+                    ) is { } mp_attr
+            )
             {
-                if (named.IsGenericType)
+                var format = mp_attr.NamedArguments
+                    .FirstOrDefault(a => a.Key == "ConverterName") is { Value.Value: string n }
+                    ? n
+                    : "MessagePackConverter";
+                var name = string.Format(format, symbol.Name);
+                return $"{named.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToDisplayString(TypeDisplayFormat)}.{name}";
+            }
+            var type = named.IsGenericType
+                ? named.ConstructUnboundGenericType().ToDisplayString(TypeDisplayFormat)
+                : named.ToDisplayString(TypeDisplayFormat);
+            if (type.StartsWith("global::System."))
+            {
+                var sub = type.AsSpan()["global::System.".Length..];
+                if (sub.SequenceEqual("TimeSpan".AsSpan()))
                 {
-                    var type = named.ConstructUnboundGenericType().ToDisplayString(TypeDisplayFormat);
-                    if (type == "global::System.Collections.Generic.Dictionary<,>")
-                    {
-                        var key = named.TypeArguments[0];
-                        var value = named.TypeArguments[0];
-                        var key_converter = GetConverter(key);
-                        if (key_converter is null) return null;
-                        var value_converter = GetConverter(value);
-                        if (value_converter is null) return null;
-                        var key_name = key.ToDisplayString(TypeDisplayFormat);
-                        var value_name = value.ToDisplayString(TypeDisplayFormat);
-                        return $"global::Coplt.MessagePack.Converters.DictionaryConverter<{key_name}, {value_name}, {key_converter}, {value_converter}>";
-                    }
+                    return $"global::Coplt.MessagePack.Converters.TimeSpanConverter";
+                }
+                else if (sub.SequenceEqual("DateTimeOffset".AsSpan()))
+                {
+                    return $"global::Coplt.MessagePack.Converters.DateTimeOffsetConverter";
+                }
+                else if (sub.SequenceEqual("Collections.Generic.Dictionary<,>".AsSpan()))
+                {
+                    var key = named.TypeArguments[0];
+                    var value = named.TypeArguments[0];
+                    var key_converter = GetConverter(key);
+                    if (key_converter is null) return null;
+                    var value_converter = GetConverter(value);
+                    if (value_converter is null) return null;
+                    var key_name = key.ToDisplayString(TypeDisplayFormat);
+                    var value_name = value.ToDisplayString(TypeDisplayFormat);
+                    return $"global::Coplt.MessagePack.Converters.DictionaryConverter<{key_name}, {value_name}, {key_converter}, {value_converter}>";
                 }
             }
         }
@@ -216,6 +244,11 @@ public class MessagePackGenerator : IIncrementalGenerator
                     {
                         info.Index = index_value;
                         field_index_inc = index_value + 1;
+                    }
+                    else if (attr_data?.ConstructorArguments.FirstOrDefault() is { Value: int index_value_ })
+                    {
+                        info.Index = index_value_;
+                        field_index_inc = index_value_ + 1;
                     }
                     else
                     {
