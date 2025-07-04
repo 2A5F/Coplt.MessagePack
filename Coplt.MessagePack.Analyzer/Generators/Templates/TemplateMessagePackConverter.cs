@@ -13,7 +13,7 @@ public class TemplateMessagePackConverter(
     ImmutableArray<FieldInfo> Fields
 ) : ATemplate(GenBase)
 {
-    public int MaxIndex = Fields.Max(a => a.Index);
+    public int MaxIndex = Fields.IsEmpty ? 0 : Fields.Max(a => a.Index);
 
     public string DataClassName = $"_{Name}__MessagePack_Converter_Data_";
 

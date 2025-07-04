@@ -3,6 +3,10 @@
     "DebugRoslynComponent": {
       "commandName": "DebugRoslynComponent",
       "targetProject": "..\\Tests\\Tests.csproj"
+    },
+    "DebugRoslynComponent2": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Test2\\Test2.csproj"
     }
   }
 }

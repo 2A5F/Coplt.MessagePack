@@ -7,7 +7,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <IsAotCompatible>true</IsAotCompatible>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <Version>0.1.0</Version>
+        <Version>0.2.0</Version>
         <PackageProjectUrl>https://github.com/2A5F/Coplt.MessagePack</PackageProjectUrl>
         <RepositoryUrl>https://github.com/2A5F/Coplt.MessagePack</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>

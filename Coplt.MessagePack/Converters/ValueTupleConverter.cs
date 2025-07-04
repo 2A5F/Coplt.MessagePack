@@ -615,7 +615,7 @@ public readonly record struct ValueTupleConverter<
         TConverter4.Write(ref writer, value.Item5, options);
         TConverter5.Write(ref writer, value.Item6, options);
         TConverter6.Write(ref writer, value.Item7, options);
-        TConverterRest.Write(ref writer, value.Rest, options);
+        TConverterRest.RestWrite(ref writer, value.Rest, options);
     }
     public static ValueTuple<T0, T1, T2, T3, T4, T5, T6, TRest> RestRead<TSource>(
         scoped ref MessagePackReader<TSource> reader, MessagePackSerializerOptions options
@@ -628,7 +628,7 @@ public readonly record struct ValueTupleConverter<
         var item4 = TConverter4.Read(ref reader, options);
         var item5 = TConverter5.Read(ref reader, options);
         var item6 = TConverter6.Read(ref reader, options);
-        var rest = TConverterRest.Read(ref reader, options);
+        var rest = TConverterRest.RestRead(ref reader, options);
         return new(item0, item1, item2, item3, item4, item5, item6, rest);
     }
     public static async ValueTask RestWriteAsync<TTarget>(
@@ -642,7 +642,7 @@ public readonly record struct ValueTupleConverter<
         await TConverter4.WriteAsync(writer, value.Item5, options);
         await TConverter5.WriteAsync(writer, value.Item6, options);
         await TConverter6.WriteAsync(writer, value.Item7, options);
-        await TConverterRest.WriteAsync(writer, value.Rest, options);
+        await TConverterRest.RestWriteAsync(writer, value.Rest, options);
     }
     public static async ValueTask<ValueTuple<T0, T1, T2, T3, T4, T5, T6, TRest>> RestReadAsync<TSource>(
         AsyncMessagePackReader<TSource> reader, MessagePackSerializerOptions options
@@ -655,7 +655,7 @@ public readonly record struct ValueTupleConverter<
         var item4 = await TConverter4.ReadAsync(reader, options);
         var item5 = await TConverter5.ReadAsync(reader, options);
         var item6 = await TConverter6.ReadAsync(reader, options);
-        var rest = await TConverterRest.ReadAsync(reader, options);
+        var rest = await TConverterRest.RestReadAsync(reader, options);
         return new(item0, item1, item2, item3, item4, item5, item6, rest);
     }
 

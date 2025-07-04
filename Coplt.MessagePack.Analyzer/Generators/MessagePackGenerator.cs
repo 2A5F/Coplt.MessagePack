@@ -169,6 +169,26 @@ public class MessagePackGenerator : IIncrementalGenerator
                 {
                     return $"global::Coplt.MessagePack.Converters.DateTimeOffsetConverter";
                 }
+                else if (sub.StartsWith("ValueTuple".AsSpan()))
+                {
+                    var last = sub["ValueTuple".Length..];
+                    if (last.IsEmpty) return $"global::Coplt.MessagePack.Converters.ValueTupleConverter";
+                    var converters = named.TypeArguments.Select(t => GetConverter(t))
+                        .Where(a => a != null).ToList();
+                    if (converters.Count != named.TypeArguments.Length) return null;
+                    var types = string.Join(", ", named.TypeArguments.Select(t => t.ToDisplayString(TypeDisplayFormat)));
+                    return $"global::Coplt.MessagePack.Converters.ValueTupleConverter<{types}, {string.Join(", ", converters)}>";
+                }
+                else if (sub.StartsWith("Tuple".AsSpan()))
+                {
+                    var last = sub["Tuple".Length..];
+                    if (last.IsEmpty) return $"global::Coplt.MessagePack.Converters.TupleConverter";
+                    var converters = named.TypeArguments.Select(t => GetConverter(t))
+                        .Where(a => a != null).ToList();
+                    if (converters.Count != named.TypeArguments.Length) return null;
+                    var types = string.Join(", ", named.TypeArguments.Select(t => t.ToDisplayString(TypeDisplayFormat)));
+                    return $"global::Coplt.MessagePack.Converters.TupleConverter<{types}, {string.Join(", ", converters)}>";
+                }
                 else if (sub.SequenceEqual("Collections.Generic.Dictionary<,>".AsSpan()))
                 {
                     var key = named.TypeArguments[0];
