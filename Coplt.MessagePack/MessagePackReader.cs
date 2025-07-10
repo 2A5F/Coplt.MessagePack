@@ -905,7 +905,7 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         var pr = Source.Peek<MessagePackTags, byte, decimal>();
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
-        if (tag == Bytes8 || len != 16) return null;
+        if (tag != Bytes8 || len != 16) return null;
         return val.BE();
     }
 
@@ -918,7 +918,7 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         var pr = Source.Peek<MessagePackTags, byte, Guid>();
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
-        if (tag == Bytes8 || len != 16) return null;
+        if (tag != Bytes8 || len != 16) return null;
         return val.BE();
     }
 
@@ -931,7 +931,7 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         var pr = Source.Peek<MessagePackTags, byte, UInt128>();
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
-        if (tag == Bytes8 || len != 16) return null;
+        if (tag != Bytes8 || len != 16) return null;
         return val.BE();
     }
 
@@ -940,7 +940,7 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         var pr = Source.Peek<MessagePackTags, byte, Int128>();
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
-        if (tag == Bytes8 || len != 16) return null;
+        if (tag != Bytes8 || len != 16) return null;
         return val.BE();
     }
 
@@ -1838,7 +1838,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         var pr = await Source.PeekAsync<MessagePackTags, byte, decimal>();
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
-        if (tag == Bytes8 || len != 16) return null;
+        if (tag != Bytes8 || len != 16) return null;
         return val.BE();
     }
 
@@ -1851,7 +1851,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         var pr = await Source.PeekAsync<MessagePackTags, byte, Guid>();
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
-        if (tag == Bytes8 || len != 16) return null;
+        if (tag != Bytes8 || len != 16) return null;
         return val.BE();
     }
 
@@ -1864,7 +1864,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         var pr = await Source.PeekAsync<MessagePackTags, byte, UInt128>();
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
-        if (tag == Bytes8 || len != 16) return null;
+        if (tag != Bytes8 || len != 16) return null;
         return val.BE();
     }
 
@@ -1873,7 +1873,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         var pr = await Source.PeekAsync<MessagePackTags, byte, Int128>();
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
-        if (tag == Bytes8 || len != 16) return null;
+        if (tag != Bytes8 || len != 16) return null;
         return val.BE();
     }
 
