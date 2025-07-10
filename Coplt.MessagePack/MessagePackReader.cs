@@ -906,6 +906,7 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
         if (tag != Bytes8 || len != 16) return null;
+        Source.Read(18);
         return val.BE();
     }
 
@@ -919,6 +920,7 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
         if (tag != Bytes8 || len != 16) return null;
+        Source.Read(18);
         return val.BE();
     }
 
@@ -932,6 +934,7 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
         if (tag != Bytes8 || len != 16) return null;
+        Source.Read(18);
         return val.BE();
     }
 
@@ -941,6 +944,7 @@ public ref struct MessagePackReader<TSource>(TSource Source, bool SourceOwner = 
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
         if (tag != Bytes8 || len != 16) return null;
+        Source.Read(18);
         return val.BE();
     }
 
@@ -1839,6 +1843,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
         if (tag != Bytes8 || len != 16) return null;
+        await Source.ReadAsync(18);
         return val.BE();
     }
 
@@ -1852,6 +1857,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
         if (tag != Bytes8 || len != 16) return null;
+        await Source.ReadAsync(18);
         return val.BE();
     }
 
@@ -1865,6 +1871,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
         if (tag != Bytes8 || len != 16) return null;
+        await Source.ReadAsync(18);
         return val.BE();
     }
 
@@ -1874,6 +1881,7 @@ public sealed class AsyncMessagePackReader<TSource>(TSource Source, bool SourceO
         if (pr is null) return null;
         var (tag, len, val) = pr.GetValueOrDefault();
         if (tag != Bytes8 || len != 16) return null;
+        await Source.ReadAsync(18);
         return val.BE();
     }
 
