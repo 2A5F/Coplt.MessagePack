@@ -32,56 +32,48 @@ public class MessagePackGenerator : IIncrementalGenerator
         switch (symbol.SpecialType)
         {
             case SpecialType.System_Object:
+            case SpecialType.System_Enum:
                 if (symbol.NullableAnnotation is NullableAnnotation.Annotated)
                     return "global::Coplt.MessagePack.Converters.NullableClassConverter<object, global::Coplt.MessagePack.Converters.EmptyObjectConverter>";
                 return "global::Coplt.MessagePack.Converters.EmptyObjectConverter";
-            case SpecialType.System_Enum:
-            {
-                var t = (INamedTypeSymbol)symbol;
-                var underlying = t.EnumUnderlyingType!;
-                var underlying_converter = GetConverter(underlying)!;
-                var underlying_name = underlying.ToDisplayString();
-                var name = symbol.ToDisplayString();
-                return $"global::Coplt.MessagePack.Converters.EnumConverter<{name}, {underlying_name}, {underlying_converter}>";
-            }
             case SpecialType.System_Boolean:
-                return "global::Coplt.MessagePack.Converters.BooleanConvert";
+                return "global::Coplt.MessagePack.Converters.BooleanConverter";
             case SpecialType.System_Char:
-                return "global::Coplt.MessagePack.Converters.CharConvert";
+                return "global::Coplt.MessagePack.Converters.CharConverter";
             case SpecialType.System_SByte:
-                return "global::Coplt.MessagePack.Converters.SByteConvert";
+                return "global::Coplt.MessagePack.Converters.SByteConverter";
             case SpecialType.System_Byte:
-                return "global::Coplt.MessagePack.Converters.ByteConvert";
+                return "global::Coplt.MessagePack.Converters.ByteConverter";
             case SpecialType.System_Int16:
-                return "global::Coplt.MessagePack.Converters.Int16Convert";
+                return "global::Coplt.MessagePack.Converters.Int16Converter";
             case SpecialType.System_UInt16:
-                return "global::Coplt.MessagePack.Converters.UInt16Convert";
+                return "global::Coplt.MessagePack.Converters.UInt16Converter";
             case SpecialType.System_Int32:
-                return "global::Coplt.MessagePack.Converters.Int32Convert";
+                return "global::Coplt.MessagePack.Converters.Int32Converter";
             case SpecialType.System_UInt32:
-                return "global::Coplt.MessagePack.Converters.UInt32Convert";
+                return "global::Coplt.MessagePack.Converters.UInt32Converter";
             case SpecialType.System_Int64:
-                return "global::Coplt.MessagePack.Converters.Int64Convert";
+                return "global::Coplt.MessagePack.Converters.Int64Converter";
             case SpecialType.System_UInt64:
-                return "global::Coplt.MessagePack.Converters.UInt64Convert";
+                return "global::Coplt.MessagePack.Converters.UInt64Converter";
             case SpecialType.System_Decimal:
-                return "global::Coplt.MessagePack.Converters.DecimalConvert";
+                return "global::Coplt.MessagePack.Converters.DecimalConverter";
             case SpecialType.System_Single:
-                return "global::Coplt.MessagePack.Converters.SingleConvert";
+                return "global::Coplt.MessagePack.Converters.SingleConverter";
             case SpecialType.System_Double:
-                return "global::Coplt.MessagePack.Converters.DoubleConvert";
+                return "global::Coplt.MessagePack.Converters.DoubleConverter";
             case SpecialType.System_String:
-                return "global::Coplt.MessagePack.Converters.StringConvert";
+                return "global::Coplt.MessagePack.Converters.StringConverter";
             case SpecialType.System_IntPtr:
-                return "global::Coplt.MessagePack.Converters.IntPtrConvert";
+                return "global::Coplt.MessagePack.Converters.IntPtrConverter";
             case SpecialType.System_UIntPtr:
-                return "global::Coplt.MessagePack.Converters.UIntPtrConvert";
+                return "global::Coplt.MessagePack.Converters.UIntPtrConverter";
             case SpecialType.System_Collections_Generic_IEnumerable_T:
             {
                 var named = (INamedTypeSymbol)symbol;
                 var underlying = named.TypeArguments[0];
                 var underlying_converter = GetConverter(underlying)!;
-                var underlying_name = underlying.ToDisplayString();
+                var underlying_name = underlying.ToDisplayString(TypeDisplayFormat);
                 return $"global::Coplt.MessagePack.Converters.IEnumerableConverter<{underlying_name}, {underlying_converter}>";
             }
             case SpecialType.System_Collections_Generic_IList_T:
@@ -89,7 +81,7 @@ public class MessagePackGenerator : IIncrementalGenerator
                 var named = (INamedTypeSymbol)symbol;
                 var underlying = named.TypeArguments[0];
                 var underlying_converter = GetConverter(underlying)!;
-                var underlying_name = underlying.ToDisplayString();
+                var underlying_name = underlying.ToDisplayString(TypeDisplayFormat);
                 return $"global::Coplt.MessagePack.Converters.IListConverter<{underlying_name}, {underlying_converter}>";
             }
             case SpecialType.System_Collections_Generic_ICollection_T:
@@ -97,7 +89,7 @@ public class MessagePackGenerator : IIncrementalGenerator
                 var named = (INamedTypeSymbol)symbol;
                 var underlying = named.TypeArguments[0];
                 var underlying_converter = GetConverter(underlying)!;
-                var underlying_name = underlying.ToDisplayString();
+                var underlying_name = underlying.ToDisplayString(TypeDisplayFormat);
                 return $"global::Coplt.MessagePack.Converters.ICollectionConverter<{underlying_name}, {underlying_converter}>";
             }
             case SpecialType.System_Collections_Generic_IReadOnlyList_T:
@@ -105,7 +97,7 @@ public class MessagePackGenerator : IIncrementalGenerator
                 var named = (INamedTypeSymbol)symbol;
                 var underlying = named.TypeArguments[0];
                 var underlying_converter = GetConverter(underlying)!;
-                var underlying_name = underlying.ToDisplayString();
+                var underlying_name = underlying.ToDisplayString(TypeDisplayFormat);
                 return $"global::Coplt.MessagePack.Converters.IReadOnlyListConverter<{underlying_name}, {underlying_converter}>";
             }
             case SpecialType.System_Collections_Generic_IReadOnlyCollection_T:
@@ -113,7 +105,7 @@ public class MessagePackGenerator : IIncrementalGenerator
                 var named = (INamedTypeSymbol)symbol;
                 var underlying = named.TypeArguments[0];
                 var underlying_converter = GetConverter(underlying)!;
-                var underlying_name = underlying.ToDisplayString();
+                var underlying_name = underlying.ToDisplayString(TypeDisplayFormat);
                 return $"global::Coplt.MessagePack.Converters.IReadOnlyCollectionConverter<{underlying_name}, {underlying_converter}>";
             }
             case SpecialType.System_Nullable_T:
@@ -121,7 +113,7 @@ public class MessagePackGenerator : IIncrementalGenerator
                 var named = (INamedTypeSymbol)symbol;
                 var underlying = named.TypeArguments[0];
                 var underlying_converter = GetConverter(underlying)!;
-                var underlying_name = underlying.ToDisplayString();
+                var underlying_name = underlying.ToDisplayString(TypeDisplayFormat);
                 return $"global::Coplt.MessagePack.Converters.NullableConverter<{underlying_name}, {underlying_converter}>";
             }
             case SpecialType.System_DateTime:
@@ -141,7 +133,14 @@ public class MessagePackGenerator : IIncrementalGenerator
         else
         {
             if (symbol is not INamedTypeSymbol named) return null;
-            if (
+            if (named.EnumUnderlyingType is { } enum_underlying)
+            {
+                var underlying_converter = GetConverter(enum_underlying)!;
+                var underlying_name = enum_underlying.ToDisplayString(TypeDisplayFormat);
+                var name = symbol.ToDisplayString(TypeDisplayFormat);
+                return $"global::Coplt.MessagePack.Converters.EnumConverter<{name}, {underlying_name}, {underlying_converter}>";
+            }
+            else if (
                 named.GetAttributes()
                     .FirstOrDefault(a =>
                         a.AttributeClass?.ToDisplayString() == "Coplt.MessagePack.MessagePackAttribute"
@@ -168,6 +167,10 @@ public class MessagePackGenerator : IIncrementalGenerator
                 else if (sub.SequenceEqual("DateTimeOffset".AsSpan()))
                 {
                     return $"global::Coplt.MessagePack.Converters.DateTimeOffsetConverter";
+                }
+                else if (sub.StartsWith("Guid".AsSpan()))
+                {
+                    return $"global::Coplt.MessagePack.Converters.GuidConverter";
                 }
                 else if (sub.StartsWith("ValueTuple".AsSpan()))
                 {
@@ -200,6 +203,18 @@ public class MessagePackGenerator : IIncrementalGenerator
                     var key_name = key.ToDisplayString(TypeDisplayFormat);
                     var value_name = value.ToDisplayString(TypeDisplayFormat);
                     return $"global::Coplt.MessagePack.Converters.DictionaryConverter<{key_name}, {value_name}, {key_converter}, {value_converter}>";
+                }
+                else if (sub.SequenceEqual("Collections.Frozen.FrozenDictionary<,>".AsSpan()))
+                {
+                    var key = named.TypeArguments[0];
+                    var value = named.TypeArguments[0];
+                    var key_converter = GetConverter(key);
+                    if (key_converter is null) return null;
+                    var value_converter = GetConverter(value);
+                    if (value_converter is null) return null;
+                    var key_name = key.ToDisplayString(TypeDisplayFormat);
+                    var value_name = value.ToDisplayString(TypeDisplayFormat);
+                    return $"global::Coplt.MessagePack.Converters.FrozenDictionaryConverter<{key_name}, {value_name}, {key_converter}, {value_converter}>";
                 }
             }
         }
