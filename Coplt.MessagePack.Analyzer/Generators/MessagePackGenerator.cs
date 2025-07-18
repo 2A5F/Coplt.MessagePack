@@ -195,7 +195,7 @@ public class MessagePackGenerator : IIncrementalGenerator
                 else if (sub.SequenceEqual("Collections.Generic.Dictionary<,>".AsSpan()))
                 {
                     var key = named.TypeArguments[0];
-                    var value = named.TypeArguments[0];
+                    var value = named.TypeArguments[1];
                     var key_converter = GetConverter(key);
                     if (key_converter is null) return null;
                     var value_converter = GetConverter(value);
@@ -207,7 +207,7 @@ public class MessagePackGenerator : IIncrementalGenerator
                 else if (sub.SequenceEqual("Collections.Frozen.FrozenDictionary<,>".AsSpan()))
                 {
                     var key = named.TypeArguments[0];
-                    var value = named.TypeArguments[0];
+                    var value = named.TypeArguments[1];
                     var key_converter = GetConverter(key);
                     if (key_converter is null) return null;
                     var value_converter = GetConverter(value);
